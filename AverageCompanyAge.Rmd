@@ -9,6 +9,7 @@ Model the average age of companies based on random product substitution.
 
 see: http://blog.gardeviance.org/2014/10/of-peace-war-and-wonder-vs-company-age.html
 
+## Parameters
 ```{r}
 # setup the environment
 setwd = "~/Projects/CompanyAgeSimulation"
@@ -23,8 +24,10 @@ number_of_companies = 1000
 product_substitution_rate = .03
 age_of_disruptor = 12
 years_of_competition = 150
+```
 
-
+## Initialize companies
+```{r}
 # create companies
 companies <- round(rnorm(number_of_companies,
                          mean=starting_average_age,
@@ -35,7 +38,10 @@ companies <- round(rnorm(number_of_companies,
 # check company ages by plotting
 summary(companies)
 hist(companies)
+```
 
+## Simulation functions
+```{r}
 # Function to return a new set of company ages after 1 year of competition
 compete <- function(age_vector, substitution_rate){
   # Pick companies to be replaced by new entrants
@@ -51,6 +57,16 @@ compete <- function(age_vector, substitution_rate){
   age_vector[targets] <- age_of_disruptor
   return(age_vector)
   }
+
+# simulate new companies entering and competing
+simulate <- function(age_vector, run_years, substitution_rate){
+  ages_all <- 0
+  for(i in 1:run_years){
+    age_vector <- compete(age_vector,substitution_rate)
+    ages_all[i] = mean(age_vector)
+    }
+  return(ages_all)
+  }
 ```
 
 ## The competition function
@@ -59,27 +75,24 @@ The competition function simply assumes that some percentage of existing compani
 
 This is problematic for several reasons, but the first is that we have no idea of company size, so we cannot choose the top 400 companies for our average.
 
-Assuming that companies are ranked by revenue, we need to estimate revenue for the companies, and sice some old companies are being replaced by young companies, presumably the young company has smaller revenue.  We also should assume that the young company has a high revenue growth rate, for a while, at least.  The (possibly large) company that is being replaced by a younger competitor will presumably experience negative growth for several years, rather than just being suddenly replaced.
+Assuming that companies are ranked by revenue, we need to estimate revenue for the companies, and since some old companies are being replaced by young companies, presumably the young company has smaller revenue.  We also should assume that the young company has a high revenue growth rate, for a while, at least.  The (possibly large) company that is being replaced by a younger competitor will presumably experience negative growth for several years, rather than just being suddenly replaced.
 
 The model should acknowledge that the largest companies will tend to be older, because they have had time to grow. A company growing at 100% per year requires 6.6 years to go from $10M to $1B.  It also seems like a company's revenue should follow something more like an S curve.
 
+In the current model, companies get randomly selected to be replaced by a company of a specified age.
+
 ## Wardley's model
 
-Simon's model assumes a 3% substitution rate.  If 1000 companies start with an average age of 45, and age by 1 year each year, then with no substitution, the average age also goes up by 1 year each year.  The average at the end of the year is 45 * 1000 / 1000 = 45.
+Simon's model assumes a 3% substitution rate.  If 1000 companies start with an average age of 45, and age by 1 year each year, then with no substitution, the average age also goes up by 1 year each year.  The average at the end of the year is 46 * 1000 / 1000 = 46.
 
-3% substitution means 30 companies get replaced with a younger company.  If the younger company is 1 year old, then the new average is (45 * 970 + 1 * 30) / 1000 = 43.68.
+3% substitution means 30 companies get replaced with a younger company.  If the younger company is 1 year old, then the new average is (46 * 970 + 1 * 30) / 1000 = 44.65.  To make my simulation produce a constant age, I had to choose a younger company age of 12.  After 1 year, the average age is (46 * 970 + 12 * 30) / 1000 = 44.98.
 ```{r}
-# simulate new companies entering and competing
-print('Starting ages')
-summary(companies)
-ages_all <- 0
-ages_top <- 0
-for(i in 1:years_of_competition){
-  companies <- compete(companies,product_substitution_rate)
-  ages_all[i] = mean(companies)
-  ages_top[i] = mean(companies[number_of_companies-400:number_of_companies])
-  }
+# Run the simulation
+ages_all <- simulate(companies, years_of_competition, product_substitution_rate)
+```
 
+
+```{r}
 # plot average age of all companies
 plot(seq(1,years_of_competition),ages_all,
      type='l',
@@ -89,9 +102,5 @@ plot(seq(1,years_of_competition),ages_all,
      xlab='years of competition',
      ylab='company age'
      )
-points(seq(1,years_of_competition),ages_top,col='red', type='l')
-
-print('Ending ages')
-summary(companies)
 ```
 
