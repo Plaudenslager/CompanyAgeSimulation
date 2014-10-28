@@ -35,22 +35,6 @@ companies <- round(rnorm(number_of_companies,
 # check company ages by plotting
 summary(companies)
 hist(companies)
-
-# Function to return a new set of company ages after 1 year of competition
-compete <- function(age_vector, substitution_rate){
-  # Pick companies to be replaced by new entrants
-  targets <- round(runif(substitution_rate*length(age_vector),
-                   min=1, max=length(age_vector)
-                   )
-             )
-  
-  # Age all companies by 1 year
-  age_vector <- age_vector + 1
-  
-  # Replace target companies with new entrants
-  age_vector[targets] <- age_of_disruptor
-  return(age_vector)
-}
 ```
 
 ## The competition function
@@ -68,23 +52,91 @@ The model should acknowledge that the largest companies will tend to be older, b
 Simon's model assumes a 3% substitution rate.  If 1000 companies start with an average age of 45, and age by 1 year each year, then with no substitution, the average age also goes up by 1 year each year.  The average at the end of the year is 45 * 1000 / 1000 = 45.
 
 3% substitution means 30 companies get replaced with a younger company.  If the younger company is 1 year old, then the new average is (45 * 970 + 1 * 30) / 1000 = 43.68.
+
+```{r}
+# Function to return a new set of company ages after 1 year of competition
+compete <- function(age_vector, substitution_rate){
+  # Pick companies to be replaced by new entrants
+  targets <- round(runif(substitution_rate*length(age_vector),
+                   min=1, max=length(age_vector)
+                   )
+             )
+  
+  # Age all companies by 1 year
+  age_vector <- age_vector + 1
+  
+  # Replace target companies with new entrants
+  age_vector[targets] <- age_of_disruptor
+  return(age_vector)
+}
+
+# Alternate compete function - companies in the top 400 get disrupted by
+# some from the balance of total companies.
+compete1 <- function(age_vector, substitution_rate){
+  # Pick companies from the top 400 to be replaced
+  targets <- round(runif(substitution_rate*length(age_vector),
+                         min=length(age_vector)-400,
+                         max=length(age_vector)
+                         )
+                   )
+  
+  # Pick companies below the top 400 to replace the targets
+  winners <- round(runif(substitution_rate*length(age_vector),
+                         min=1, max=length(age_vector)-401
+                         )
+                   )
+  
+  # Age all companies by 1 year
+  age_vector <- age_vector + 1
+  
+  # Replace target companies with winners
+  age_vector[targets] <- age_vector[winners]
+  # Put new entrants into the slots vacated by the winners
+  age_vector[winners] <- round(rnorm(length(winners),
+                                     mean=starting_average_age,
+                                     sd=starting_standard_deviation_age
+                                     ),
+                               digits=1)
+  
+  return(age_vector)
+}
+```
+
+
 ```{r}
 # simulate new companies entering and competing
 print('Starting ages')
 summary(companies)
+companies1 <- companies
 ages_all <- 0
 ages_top <- 0
+set.seed(100)
 for(i in 1:years_of_competition){
   companies <- compete(companies,product_substitution_rate)
   ages_all[i] = mean(companies)
   ages_top[i] = mean(companies[number_of_companies-400:number_of_companies])
 }
 
-# plot average age of all companies
-plot(seq(1,years_of_competition),ages_all,type='l', ylim=c(0,50), col='blue')
-points(seq(1,years_of_competition),ages_top,col='red', type='l')
+ages_top1 <- 0
+set.seed(100)
+for(i in 1:years_of_competition){
+  companies1 <- compete1(companies1,product_substitution_rate)
+  ages_top1[i] = mean(companies1[number_of_companies-400:number_of_companies])
+}
 
-print('Ending ages')
-summary(companies)
+# plot average age of all companies
+plot(seq(1,years_of_competition),ages_top,type='l', ylim=c(0,50), col='blue')
+points(seq(1,years_of_competition),ages_top1,col='red', type='l')
+
 ```
 
+```{r}
+# Plot final age distribution for top 400
+# From original compete agorithm
+hist(ages_top)
+
+# From second compete algorithm
+hist(ages_top1)
+
+
+```
