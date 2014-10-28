@@ -27,9 +27,9 @@ years_of_competition = 150
 
 # create companies
 companies <- round(rnorm(number_of_companies,
-                   mean=starting_average_age,
-                   sd=starting_standard_deviation_age
-                   ),
+                         mean=starting_average_age,
+                         sd=starting_standard_deviation_age
+                         ),
                    digits=1)
 
 # check company ages by plotting
@@ -40,9 +40,9 @@ hist(companies)
 compete <- function(age_vector, substitution_rate){
   # Pick companies to be replaced by new entrants
   targets <- round(runif(substitution_rate*length(age_vector),
-                   min=1, max=length(age_vector)
+                         min=1, max=length(age_vector)
+                         )
                    )
-             )
   
   # Age all companies by 1 year
   age_vector <- age_vector + 1
@@ -50,7 +50,7 @@ compete <- function(age_vector, substitution_rate){
   # Replace target companies with new entrants
   age_vector[targets] <- age_of_disruptor
   return(age_vector)
-}
+  }
 ```
 
 ## The competition function
@@ -78,10 +78,17 @@ for(i in 1:years_of_competition){
   companies <- compete(companies,product_substitution_rate)
   ages_all[i] = mean(companies)
   ages_top[i] = mean(companies[number_of_companies-400:number_of_companies])
-}
+  }
 
 # plot average age of all companies
-plot(seq(1,years_of_competition),ages_all,type='l', ylim=c(0,50), col='blue')
+plot(seq(1,years_of_competition),ages_all,
+     type='l',
+     ylim=c(0,50),
+     col='blue',
+     main='Average age of all companies with competition',
+     xlab='years of competition',
+     ylab='company age'
+     )
 points(seq(1,years_of_competition),ages_top,col='red', type='l')
 
 print('Ending ages')
