@@ -105,7 +105,7 @@ summarize_by_year <- function(year){
   return(summary(data[year,]))
 }
   
-sim_range=1:10
+sim_range=1:1000
 
 # Return many versions of the ages vector
 # elements in data[i,j] are i years and j simulation runs
@@ -133,7 +133,8 @@ plot(1:years_of_competition,avg_by_year,
      xlab='years of competition',
      ylab='company age'
      )
-#lines(1:years_of_competition,data[sd])
+lines(1:years_of_competition,max_by_year, col='red')
+lines(1:years_of_competition,min_by_year, col='green')
 
 
 ```
