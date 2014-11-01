@@ -59,7 +59,7 @@ compete <- function(age_vector, substitution_rate){
   }
 
 # simulate new companies entering and competing
-simulate <- function(age_vector, run_years, substitution_rate){
+substitute <- function(age_vector, run_years, substitution_rate){
   ages_all <- 0
   for(i in 1:run_years){
     age_vector <- compete(age_vector,substitution_rate)
@@ -67,6 +67,7 @@ simulate <- function(age_vector, run_years, substitution_rate){
     }
   return(ages_all)
   }
+
 ```
 
 ## The competition function
@@ -86,21 +87,44 @@ In the current model, companies get randomly selected to be replaced by a compan
 Simon's model assumes a 3% substitution rate.  If 1000 companies start with an average age of 45, and age by 1 year each year, then with no substitution, the average age also goes up by 1 year each year.  The average at the end of the year is 46 * 1000 / 1000 = 46.
 
 3% substitution means 30 companies get replaced with a younger company.  If the younger company is 1 year old, then the new average is (46 * 970 + 1 * 30) / 1000 = 44.65.  To make my simulation produce a constant age, I had to choose a younger company age of 12.  After 1 year, the average age is (46 * 970 + 12 * 30) / 1000 = 44.98.
-```{r}
-# Run the simulation
-ages_all <- simulate(companies, years_of_competition, product_substitution_rate)
-```
 
+## Sensitivity analysis on starting parameters
 
 ```{r}
-# plot average age of all companies
-subtitle = paste0(c('n=',number_of_companies,
-               ', sub. rate=',product_substitution_rate,
-               ', new entrant age=',age_of_disruptor),
-             collapse="")
-print(subtitle)
+# run the analysis many times with standard parameters to check stability
 
-plot(seq(1,years_of_competition),ages_all,
+# return the ages vector
+sim <- function(x){
+  ages = substitute(companies, years_of_competition, product_substitution_rate)
+  return(ages)
+  }
+
+# function to return parameters over the year / sim run matrix
+# returns summary table (min, max, average, others) of all sim runs, one summary per year
+summarize_by_year <- function(year){
+  return(summary(data[year,]))
+}
+  
+sim_range=1:10
+
+# Return many versions of the ages vector
+# elements in data[i,j] are i years and j simulation runs
+data=(sapply(sim_range,sim))
+params_by_year = sapply(1:years_of_competition,summarize_by_year)
+dim(params_by_year)
+
+avg_by_year <- params_by_year['Mean',]
+max_by_year <- params_by_year['Max.',]
+min_by_year <- params_by_year['Min.',]
+
+
+# plot a graph with age on the x axis, and low, mean, and high results
+subtitle = paste0(c('sim. runs=',max(sim_range),
+                    ', companies=',number_of_companies,
+                    ', sub. rate=',product_substitution_rate,
+                    ', new entrant age=',age_of_disruptor),
+                  collapse="")
+plot(1:years_of_competition,avg_by_year,
      type='l',
      ylim=c(0,50),
      col='blue',
@@ -109,5 +133,7 @@ plot(seq(1,years_of_competition),ages_all,
      xlab='years of competition',
      ylab='company age'
      )
-```
+#lines(1:years_of_competition,data[sd])
 
+
+```
