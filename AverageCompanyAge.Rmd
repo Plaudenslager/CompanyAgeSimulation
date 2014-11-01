@@ -94,11 +94,18 @@ ages_all <- simulate(companies, years_of_competition, product_substitution_rate)
 
 ```{r}
 # plot average age of all companies
+subtitle = paste0(c('n=',number_of_companies,
+               ', sub. rate=',product_substitution_rate,
+               ', new entrant age=',age_of_disruptor),
+             collapse="")
+print(subtitle)
+
 plot(seq(1,years_of_competition),ages_all,
      type='l',
      ylim=c(0,50),
      col='blue',
      main='Average age of all companies with competition',
+     sub=subtitle,
      xlab='years of competition',
      ylab='company age'
      )
