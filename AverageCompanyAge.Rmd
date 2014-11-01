@@ -68,6 +68,26 @@ substitute <- function(age_vector, run_years, substitution_rate){
   return(ages_all)
   }
 
+# plot function
+plot_by_year <- function(avg_by_yr,min_by_yr,max_by_yr){
+  # plot a graph with age on the x axis, and low, mean, and high results
+  subtitle = paste0(c('sim. runs=',max(sim_range),
+                      ', companies=',number_of_companies,
+                      ', sub. rate=',product_substitution_rate,
+                      ', new entrant age=',age_of_disruptor),
+                    collapse="")
+  plot(1:years_of_competition,avg_by_yr,
+       type='l',
+       ylim=c(0,50),
+       col='blue',
+       main='Average age of all companies with competition',
+       sub=subtitle,
+       xlab='years of competition',
+       ylab='company age'
+       )
+  lines(1:years_of_competition,max_by_yr, col='red')
+  lines(1:years_of_competition,min_by_yr, col='green')
+  }
 ```
 
 ## The competition function
@@ -88,7 +108,7 @@ Simon's model assumes a 3% substitution rate.  If 1000 companies start with an a
 
 3% substitution means 30 companies get replaced with a younger company.  If the younger company is 1 year old, then the new average is (46 * 970 + 1 * 30) / 1000 = 44.65.  To make my simulation produce a constant age, I had to choose a younger company age of 12.  After 1 year, the average age is (46 * 970 + 12 * 30) / 1000 = 44.98.
 
-## Sensitivity analysis on starting parameters
+## Simulate ages over multiple trials
 
 ```{r}
 # run the analysis many times with standard parameters to check stability
@@ -119,22 +139,28 @@ min_by_year <- params_by_year['Min.',]
 
 
 # plot a graph with age on the x axis, and low, mean, and high results
-subtitle = paste0(c('sim. runs=',max(sim_range),
-                    ', companies=',number_of_companies,
-                    ', sub. rate=',product_substitution_rate,
-                    ', new entrant age=',age_of_disruptor),
-                  collapse="")
-plot(1:years_of_competition,avg_by_year,
-     type='l',
-     ylim=c(0,50),
-     col='blue',
-     main='Average age of all companies with competition',
-     sub=subtitle,
-     xlab='years of competition',
-     ylab='company age'
-     )
-lines(1:years_of_competition,max_by_year, col='red')
-lines(1:years_of_competition,min_by_year, col='green')
+plot_by_year(avg_by_year,min_by_year,max_by_year)
 
+# subtitle = paste0(c('sim. runs=',max(sim_range),
+#                     ', companies=',number_of_companies,
+#                     ', sub. rate=',product_substitution_rate,
+#                     ', new entrant age=',age_of_disruptor),
+#                   collapse="")
+# plot(1:years_of_competition,avg_by_year,
+#      type='l',
+#      ylim=c(0,50),
+#      col='blue',
+#      main='Average age of all companies with competition',
+#      sub=subtitle,
+#      xlab='years of competition',
+#      ylab='company age'
+#      )
+# lines(1:years_of_competition,max_by_year, col='red')
+# lines(1:years_of_competition,min_by_year, col='green')
+
+```
+
+# Sensitivity test other parameters
+```{r}
 
 ```
